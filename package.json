@@ -1,6 +1,6 @@
 {
   "name": "indent-detective",
-  "main": "./lib/indent-detective",
+  "main": "./dist/indent-detective",
   "version": "0.4.0",
   "description": "Detect indentation settings in the active editor",
   "keywords": [],
@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "atom-space-pen-views": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/atom": "^1.40.1"
   },
   "consumedServices": {
     "status-bar": {
