@@ -14,14 +14,17 @@
 //    "jsx": "react",
 //    "jsxFactory": "etch.dom",
 
-    "lib": ["ES2018"],
+    "lib": [
+      "ES2018",
+      "dom"
+    ],
 //    "plugins": [{"name": "typescript-tslint-plugin"}],
     "module": "commonjs",
 //    "noLib": false,
     "outDir": "../dist",
 //    "preserveConstEnums": true,
 //    "sourceMap": true,
-    "target": "ES2018",
+    "target": "ES2018"
   },
   "compileOnSave": true
 }
