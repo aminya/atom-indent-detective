@@ -183,7 +183,7 @@ function select () {
     items[ind+1] = {text: `${possibleIndentations[ind]} Spaces`, length: ind};
   }
   items[possibleIndentations_length] = {text: 'Tabs', length: 'tab'}
-  
+
   selector.show(items, ({text, length}={}) =>{
     const editor = atom.workspace.getActiveTextEditor()
     if (editor instanceof TextEditor){ // to make sure is defined
