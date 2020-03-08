@@ -36,7 +36,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
 //    "noLib": false,
-    "importHelpers": true, // if true you should add tslib to deps
+//    "importHelpers": true, // if true you should add tslib to deps
 //    "skipLibCheck": false,
 
     "outDir": "../dist",

@@ -5,7 +5,7 @@ export default {
   activate() {
     return this.createView();
   },
-
+  
   deactivate() {
     return (this.tile != null ? this.tile.destroy() : undefined);
   },
