@@ -1,5 +1,7 @@
 'use babel'
 
+// TODO: Converting to wasm using https://docs.assemblyscript.org/
+
 import { CompositeDisposable, TextEditor } from 'atom'
 import {StatusBar} from "atom/status-bar";
 
