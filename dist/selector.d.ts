@@ -1,4 +1,7 @@
 declare const _default: {
-    show(xs: any, f: any): () => any;
+    show(xs: {
+        text: string;
+        length: string | number;
+    }[], f: any): () => any;
 };
 export default _default;
