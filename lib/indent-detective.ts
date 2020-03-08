@@ -28,7 +28,7 @@ export const config = {
 };
 
 export function activate () {
-  subs = new CompositeDisposable()
+  subs = new CompositeDisposable()  // subscriptions
   status.activate()
 
   subs.add(
