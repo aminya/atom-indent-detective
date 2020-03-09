@@ -21,5 +21,14 @@
         "^1.0.0": "consumeStatusBar"
       }
     }
+  },
+  "babel": {
+    "presets": ["@babel/typescript"],
+    "plugins": [
+      "@babel/proposal-class-properties",
+      "@babel/proposal-object-rest-spread",
+      "@babel/plugin-transform-runtime"
+    ],
+    "ignore": ["node_modules", "src/test"]
   }
 }
