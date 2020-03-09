@@ -1,38 +1,69 @@
-// TODO: Replacing space-pen-views
+/// <reference path="../types/atom-select-list.d.ts"/>
+import {SelectListView} from 'atom-select-list';
 
-import { SelectListView } from 'atom-space-pen-views';
+import {TextEditor, CompositeDisposable, Panel, Disposable} from 'atom';
+import {IndentSetting, setIndent, getItemsList} from './indent-detective';
+export function selector_show(subs: CompositeDisposable) {
 
-export default {
-  show(xs :Array<{ text: string, length: number | string }>, f) {
-    if (this.selector == null) { this.selector = new SelectListView; }
-    this.selector.setItems([]);
-    this.selector.storeFocusedElement();
-    this.selector.getFilterKey = () => 'text';
-    this.selector.viewForItem = item => {
-      return `<li>${item.text}</li>`;
-    };
 
-    if (xs.constructor === Promise) {
-      this.selector.setLoading("Loading...");
-      xs.then(xs => {
-        return this.selector.setItems(xs);
-      });
-    } else {
-      this.selector.setItems(xs);
+    let makeModalPanel :boolean = true
+    let modalPanel: Panel
+    let indentListView :SelectListView
+
+    if (makeModalPanel) {
+
+        // Defining a SelectListView with methods - https://github.com/atom/atom-select-list
+        indentListView = new SelectListView({
+
+            // an array containing the objects you want to show in the select list
+            items: getItemsList(),
+
+            // called whenever an item needs to be displayed.
+            elementForItem: function (indent: IndentSetting) {
+                const element = document.createElement('li');
+                element.textContent = indent.text;
+                return element;
+            },
+
+            // called to retrieve a string property on each item and that will be used to filter them.
+            filterKeyForItem: function (indent: IndentSetting) {
+                return indent.text
+            },
+
+            // called when the user clicks or presses Enter on an item.
+            didConfirmSelection: function (indent: IndentSetting) {
+
+                const editor = atom.workspace.getActiveTextEditor();
+                if (editor instanceof TextEditor) {
+                    setIndent(editor, indent);
+                }
+                modalPanel.hide();
+            },
+
+            // called when the user presses Esc or the list loses focus.
+            didCancelSelection: function () {
+                modalPanel.hide();
+                return {} // f()!
+            },
+        });
+
+        // Adding SelectListView to panel
+        modalPanel = atom.workspace.addModalPanel({
+            item: indentListView
+        });
+
+        // Add disposable
+        subs.add(
+            new Disposable(function () {
+                indentListView.destroy();
+                modalPanel.destroy();
+                makeModalPanel = true;
+            })
+        );
+
+        // Show selector
+        indentListView.reset();
+        modalPanel.show();
+        indentListView.focus();
     }
-
-    const panel = atom.workspace.addModalPanel({item: this.selector});
-    this.selector.focusFilterEditor();
-
-    let confirmed = false;
-    this.selector.confirmed = item => {
-      f(item);
-      confirmed = true;
-      return this.selector.cancel();
-    };
-    return this.selector.cancelled = () => {
-      panel.destroy();
-      if (!confirmed) { return f(); }
-    };
-  }
-};
+}

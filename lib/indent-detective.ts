@@ -1,77 +1,73 @@
 'use babel'
-
 // TODO: Converting to wasm using https://docs.assemblyscript.org/
-
 import { CompositeDisposable, TextEditor } from 'atom'
 import {StatusBar} from "atom/status-bar";
 
-import status from './status'
-import selector from './selector'
 
-// TODO: Array of numbers
+import status from './status'
+import {selector_show} from './selector'
+
+// object to hold indent setting for one item
+export type IndentSetting = { text: string, length: number | "tab" };
+
 let possibleIndentations :Array<number> = [];
 
 let enableDebug = false
-const manual = new Set()
+let manual = new Set()
 let subs :CompositeDisposable
 
 export const config = {
   possibleIndentations: {
     type: 'array',
-    default: [2, 3, 4, 6, 8],
-    items: {
+  default: [2, 3, 4, 6, 8],
+        items: {
       type: 'number'
     },
     order: 1
   },
   enableDebugMessages: {
     type: 'boolean',
-    default: false,
-    order: 2
+  default: true,
+        order: 2
   }
-};
+}
 
-export function activate () {
+export function activate() {
   subs = new CompositeDisposable()  // subscriptions
   status.activate()
 
   subs.add(
-    atom.workspace.observeTextEditors((ed) => {
-      run(ed)
-      const sub = ed.onDidStopChanging(() => {
+      atom.workspace.observeTextEditors((ed) => {
         run(ed)
+        const sub = ed.onDidStopChanging(() => {
+          run(ed)
+        })
+        subs.add(ed.onDidDestroy(() => {
+          sub.dispose()
+          manual.delete(ed)
+        }))
+      }),
+      atom.workspace.onDidStopChangingActivePaneItem((item) => {
+        if (item instanceof TextEditor) {
+          run(item)
+        } else {
+          status.update()
+        }
+      }),
+
+      atom.commands.add('atom-text-editor', {
+        'indent-detective:choose-indent': function() {selector_show(subs)}
       })
-      subs.add(ed.onDidDestroy(() => {
-        sub.dispose()
-        manual.delete(ed)
-      }))
-    }),
-    atom.workspace.onDidStopChangingActivePaneItem((item) => {
-      if (item instanceof TextEditor) {
-        run(item)
-      } else {
-        status.update()
-      }
-    }),
-    atom.commands.add('atom-text-editor', {
-      'indent-detective:choose-indent': () => select()
-    }),
-    atom.config.observe('indent-detective.possibleIndentations', (opts) => {
-      possibleIndentations = opts
-    }),
-    atom.config.observe('indent-detective.enableDebugMessages', (val) => {
-      enableDebug = val
-    })
   )
 }
 
-export function deactivate () {
+export function deactivate() {
   subs.dispose()
   manual.clear()
   status.deactivate()
 }
 
-export function consumeStatusBar (bar :StatusBar) {
+export function consumeStatusBar(bar :StatusBar) {
   status.consumeStatusBar(bar)
 }
 
@@ -84,21 +80,21 @@ function run (editor :TextEditor) {
   status.update(editor)
 }
 
-function setSettings (editor :TextEditor, indent :number | "tab") {
+function setSettings(editor :TextEditor, length :number | "tab") {
   if (enableDebug) {
-    console.log(`-> decided for ${indent}`)
+    console.log(`-> decided for ${length}`)
   }
-  if (indent == 0) return // default settings
+  if (length == 0) return // default settings
 
-  if (indent == 'tab') {
+  if (length == "tab") {
     editor.setSoftTabs(false)
-  } else if (indent >= Math.min(...possibleIndentations) && indent <= Math.max(...possibleIndentations)) {
+  } else if (length >= Math.min(...possibleIndentations) && length <= Math.max(...possibleIndentations)) {
     editor.setSoftTabs(true)
-    editor.setTabLength(indent)
+    editor.setTabLength(length)
   }
 }
 
-function bestOf (counts:Array<number>) {
+function bestOf(counts:Array<number>) {
   let best :number = 0
   let score :number = 0
   for (let vote = 0; vote < counts.length; vote++) {
@@ -111,7 +107,7 @@ function bestOf (counts:Array<number>) {
   return best
 }
 
-function getIndent (editor :TextEditor) {
+function getIndent(editor :TextEditor) {
   let row = -1
   let counts: Array<number> = [];
   let previousIndent = 0
@@ -146,7 +142,7 @@ function getIndent (editor :TextEditor) {
   return bestOf(counts)
 }
 
-function isValidLine (row :number, line :string, editor :TextEditor) {
+function isValidLine(row :number, line :string, editor :TextEditor) {
   // empty line
   if (line.match(/^\s*$/)) return false
 
@@ -162,39 +158,40 @@ function isValidLine (row :number, line :string, editor :TextEditor) {
   return true
 }
 
-function lineIndent (line :string) {
+function lineIndent(line :string) {
   if (line.match(/^\t+/)) {
-    return 'tab'
+    return "tab"
   } else {
     return line.match(/^([ ]*)/)[0].length
   }
 }
 
-function select () {
+export function setIndent(editor: TextEditor, indent :IndentSetting) {
+    if (indent.text == "Automatic") {
+      manual.delete(editor)
+      run(editor)
+    } else {
+      setSettings(editor, indent.length)
+      manual.add(editor)
+      status.update(editor)
+    }
+}
+
+export function getItemsList() {
+
+  possibleIndentations = atom.config.get('indent-detective.possibleIndentations')
 
   const possibleIndentations_length = possibleIndentations.length
 
   // items declaration (Array<object> template)
-  let items = new Array<{ text: string, length: number | string }>( possibleIndentations_length + 2)
+  let items = new Array<IndentSetting>( possibleIndentations_length + 2)
 
   // items filling
-  items[1] = {text: 'Automatic', length: 'auto'};
+  items[0] = {text: "Automatic", length: 0};
   for (let ind = 0; ind < possibleIndentations_length; ind++) {
     items[ind+1] = {text: `${possibleIndentations[ind]} Spaces`, length: ind};
   }
-  items[possibleIndentations_length] = {text: 'Tabs', length: 'tab'}
+  items[possibleIndentations_length] = {text: "Tabs", length: "tab"}
 
-  selector.show(items, ({text, length}={}) =>{
-    const editor = atom.workspace.getActiveTextEditor()
-    if (editor instanceof TextEditor){ // to make sure is defined
-      if (text == 'Automatic') {
-        manual.delete(editor)
-        run(editor)
-      } else {
-        setSettings(editor, length)
-        manual.add(editor)
-        status.update(editor)
-      }
-    }
-  })
+  return items
 }
