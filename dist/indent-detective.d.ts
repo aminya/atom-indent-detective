@@ -12,11 +12,8 @@ export declare const config: {
         items: {
             type: string;
         };
-        order: number;
-    };
-    enableDebugMessages: {
-        type: string;
-        default: boolean;
+        title: string;
+        description: string;
         order: number;
     };
 };
