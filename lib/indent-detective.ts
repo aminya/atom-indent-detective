@@ -3,6 +3,7 @@
 import { CompositeDisposable, TextEditor } from 'atom'
 import {StatusBar} from "atom/status-bar";
 
+
 import status from './status'
 import {selector_show} from './selector'
 

@@ -1,7 +1,3 @@
-declare const _default: {
-    show(xs: {
-        text: string;
-        length: string | number;
-    }[], f: any): () => any;
-};
-export default _default;
+/// <reference path="../types/atom-select-list.d.ts" />
+import { CompositeDisposable } from 'atom';
+export declare function selector_show(subs: CompositeDisposable): void;
