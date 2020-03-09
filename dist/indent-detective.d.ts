@@ -1,8 +1,9 @@
 import { TextEditor } from 'atom';
 import { StatusBar } from "atom/status-bar";
+export declare type lengthSetting = number | "tab";
 export declare type IndentSetting = {
     text: string;
-    length: number | "tab";
+    length: lengthSetting;
 };
 export declare const config: {
     possibleIndentations: {
