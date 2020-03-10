@@ -1,12 +1,15 @@
 import { TextEditor } from "atom";
-import { StatusBar } from "atom/status-bar";
-declare const _default: {
-    activate(): any;
-    deactivate(): any;
-    consumeStatusBar(bar: StatusBar): any;
-    createView(): () => Promise<void> | null;
-    update(editor?: TextEditor | undefined): any;
+import { StatusBar, Tile } from "atom/status-bar";
+export declare class IndentStatusItem {
+    bar: StatusBar;
+    tile: Tile | null;
+    text: HTMLElement | null;
+    view: HTMLElement;
+    constructor();
+    consumeStatusBar(bar: StatusBar): Tile;
+    createView(): this;
+    updateDisplay(editor?: TextEditor | undefined): string | undefined;
     updateText(editor: TextEditor): string | undefined;
     clearText(): "" | undefined;
-};
-export default _default;
+    destroy(): void;
+}
