@@ -6,9 +6,9 @@ export declare type IndentSetting = {
     length: lengthSetting;
 };
 export declare const config: {
-    possibleIndentations: {
+    possibleIndentations_str: {
         type: string;
-        default: number[];
+        default: string[];
         items: {
             type: string;
         };
