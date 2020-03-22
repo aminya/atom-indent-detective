@@ -5,7 +5,6 @@ export declare type IndentSetting = {
     text: string;
     length: lengthSetting;
 };
-export declare let SelectorItems: Array<IndentSetting>;
 export declare const config: {
     possibleIndentations_str: {
         type: string;
